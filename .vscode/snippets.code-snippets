@@ -82,6 +82,15 @@
     "prefix": "viewTransition",
     "body": ["<ViewTransition exit=\"slide-out\" enter=\"slide-out\" default=\"none\">", "$1", "</ViewTransition>"],
   },
+  "importViewTransition": {
+    "scope": "typescriptreact",
+    "prefix": "importViewTransition",
+
+    "body": [
+      "// @ts-expect-error - unstable API but works in React 19",
+      "import { unstable_ViewTransition as ViewTransition } from 'react';",
+    ],
+  },
   "todoStats": {
     "scope": "typescriptreact",
     "prefix": "todoStats",

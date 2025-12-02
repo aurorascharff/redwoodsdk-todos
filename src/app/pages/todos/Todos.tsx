@@ -1,6 +1,7 @@
 'use client';
 
 // @ts-expect-error - unstable API but works in React 19
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, autofix/no-unused-vars
 import { unstable_ViewTransition as ViewTransition } from 'react';
 import { useActionState, useOptimistic, use, useRef, useState, startTransition } from 'react';
 import Button from '@/app/components/ui/Button';
@@ -80,19 +81,18 @@ export default function Todos({ todosPromise }: Props) {
         ) : (
           sortedTodos.map(todo => {
             return (
-              <ViewTransition key={todo.id}>
-                <TodoItem
-                  done={todo.done}
-                  statusChangeAction={done => {
-                    statusChangeAction(done, todo);
-                  }}
-                  deleteAction={() => {
-                    deleteAction(todo.id);
-                  }}
-                >
-                  {todo.title}
-                </TodoItem>
-              </ViewTransition>
+              <TodoItem
+                key={todo.id}
+                done={todo.done}
+                statusChangeAction={done => {
+                  statusChangeAction(done, todo);
+                }}
+                deleteAction={() => {
+                  deleteAction(todo.id);
+                }}
+              >
+                {todo.title}
+              </TodoItem>
             );
           })
         )}
