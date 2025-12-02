@@ -57,7 +57,7 @@ export default function Todos({ todosPromise }: Props) {
   return (
     <>
       <AddTodoForm addAction={addTodoAction} />
-      {optimisticTodos.length > 0 && <SortButton sortOrder={sortOrder} onSortOrderChange={setSortOrder} />}
+      {optimisticTodos.length > 0 && <SortButton sortOrderAction={setSortOrder} sortOrder={sortOrder} />}
       <TodoList
         todos={sortedTodos}
         statusChangeAction={statusChangeAction}
@@ -165,25 +165,31 @@ function TodoStats({ todos, isPending }: { todos: Todo[]; isPending: boolean }) 
 }
 
 function SortButton({
+  sortOrderAction,
   sortOrder,
-  onSortOrderChange,
+  setSortOrder,
 }: {
+  sortOrderAction?: (order: SortOrder) => Promise<void> | void;
+  setSortOrder?: (order: SortOrder) => void;
   sortOrder: SortOrder;
-  onSortOrderChange: (order: SortOrder) => void;
 }) {
   const [optimisticSortOrder, setOptimisticSortOrder] = useOptimistic(sortOrder);
 
-  const clickAction = () => {
-    const newSortOrder = getNextSortOrder(sortOrder);
-    onSortOrderChange(newSortOrder);
-    startTransition(() => {
-      setOptimisticSortOrder(newSortOrder);
-    });
-  };
-
   return (
     <div className="mb-4 flex justify-end">
-      <Button type="button" variant="secondary" onClick={clickAction} className="text-sm">
+      <Button
+        type="button"
+        variant="secondary"
+        onClick={() => {
+          const newSortOrder = getNextSortOrder(sortOrder);
+          setSortOrder?.(newSortOrder);
+          startTransition(async () => {
+            setOptimisticSortOrder(newSortOrder);
+            await sortOrderAction?.(newSortOrder);
+          });
+        }}
+        className="text-sm"
+      >
         {getSortOrderLabel(optimisticSortOrder)}
       </Button>
     </div>
