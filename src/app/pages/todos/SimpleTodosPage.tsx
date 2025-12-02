@@ -54,15 +54,15 @@ export default async function SimpleTodosPage() {
   );
 }
 
-interface Todo {
+type Todo = {
   id: string;
   title: string;
   done: boolean;
-}
+};
 
-interface SimpleTodoItemProps {
+type SimpleTodoItemProps = {
   todo: Todo;
-}
+};
 
 function SimpleTodoItem({ todo }: SimpleTodoItemProps) {
   return (
@@ -81,10 +81,10 @@ function SimpleTodoItem({ todo }: SimpleTodoItemProps) {
   );
 }
 
-interface TodoToggleButtonProps {
+type TodoToggleButtonProps = {
   todoId: string;
   isDone: boolean;
-}
+};
 
 function TodoToggleButton({ todoId, isDone }: TodoToggleButtonProps) {
   return (
@@ -114,9 +114,9 @@ function TodoToggleButton({ todoId, isDone }: TodoToggleButtonProps) {
   );
 }
 
-interface TodoDeleteButtonProps {
+type TodoDeleteButtonProps = {
   todoId: string;
-}
+};
 
 function TodoDeleteButton({ todoId }: TodoDeleteButtonProps) {
   return (

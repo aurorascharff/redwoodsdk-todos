@@ -2,7 +2,7 @@
 
 // @ts-expect-error - unstable API but works in React 19
 import { unstable_ViewTransition as ViewTransition } from 'react';
-import { useActionState, useOptimistic, use, useRef, useState, startTransition } from 'react';
+import { useActionState, useOptimistic, use, useState, startTransition, useRef } from 'react';
 import Button from '@/app/components/ui/Button';
 import SpinnerIcon from '@/app/components/ui/icons/SpinnerIcon';
 import type { Todo } from '@/types/todo';
@@ -19,7 +19,6 @@ export default function Todos({ todosPromise }: Props) {
   const [todos, dispatch, isPending] = useActionState(todosReducer, initialTodos);
   const [optimisticTodos, setOptimisticTodos] = useOptimistic(todos);
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
-  const formRef = useRef<HTMLFormElement>(null);
 
   const statusChangeAction = (done: boolean, todo: Todo) => {
     const payload = { id: todo.id, updatedTodo: { ...todo, done } };
@@ -41,87 +40,127 @@ export default function Todos({ todosPromise }: Props) {
     dispatch({ payload, type: 'delete' });
   };
 
-  const addTodoAction = (e: React.FormEvent) => {
-    e.preventDefault();
-    startTransition(() => {
-      const formData = new FormData(formRef.current!);
-      const title = formData.get('title')?.toString();
-      if (!title?.trim()) return;
-      const id = crypto.randomUUID();
-      const createdAt = new Date();
-      const todo: Todo = { createdAt, done: false, id, title: title.trim(), userId: '' };
+  const addTodoAction = (title: string) => {
+    const id = crypto.randomUUID();
+    const createdAt = new Date();
+    const todo: Todo = { createdAt, done: false, id, title, userId: '' };
 
-      setOptimisticTodos((prev: Todo[]) => {
-        return [todo, ...prev];
-      });
-      dispatch({ payload: { todo: { done: false, id, title: title.trim() } }, type: 'add' });
-      formRef.current?.reset();
+    setOptimisticTodos((prev: Todo[]) => {
+      return [todo, ...prev];
     });
+    dispatch({ payload: { todo: { done: false, id, title } }, type: 'add' });
   };
 
   const sortedTodos = getSortedTodos(optimisticTodos, sortOrder);
 
   return (
     <>
-      <form ref={formRef} onSubmit={addTodoAction} className="mb-6">
-        <div className="flex gap-2">
-          <input type="text" name="title" placeholder="Add a new todo..." className="flex-1" required />
-          <Button hideSpinner type="submit">
-            Add Todo
-          </Button>
-        </div>
-      </form>
+      <AddTodoForm addAction={addTodoAction} />
       {optimisticTodos.length > 0 && <SortButton sortOrderAction={setSortOrder} sortOrder={sortOrder} />}
-      <div className="space-y-2">
-        {optimisticTodos.length === 0 ? (
-          <div className="surface-card-padded">
-            <p className="text-text-muted">No todos yet. Add your first todo above! 🎯</p>
-          </div>
-        ) : (
-          sortedTodos.map(todo => {
-            return (
-              <ViewTransition key={todo.id}>
-                <TodoItem
-                  done={todo.done}
-                  statusChangeAction={done => {
-                    statusChangeAction(done, todo);
-                  }}
-                  deleteAction={() => {
-                    deleteAction(todo.id);
-                  }}
-                >
-                  {todo.title}
-                </TodoItem>
-              </ViewTransition>
-            );
-          })
-        )}
-      </div>
-      <div className="mt-8 text-center">
-        <p className="text-text-muted text-sm">
-          Total: {optimisticTodos.length} • Completed:{' '}
-          {
-            optimisticTodos.filter(todo => {
-              return todo.done;
-            }).length
-          }{' '}
-          • Remaining:{' '}
-          {
-            optimisticTodos.filter(todo => {
-              return !todo.done;
-            }).length
-          }
-        </p>
-        {isPending && (
-          <div className="mt-2 animate-pulse text-xs font-medium text-orange-600" aria-live="polite">
-            <span className="inline-flex items-center gap-1">
-              <SpinnerIcon className="h-3 w-3" />
-              Syncing to server…
-            </span>
-          </div>
-        )}
-      </div>
+      <TodoList
+        todos={sortedTodos}
+        statusChangeAction={statusChangeAction}
+        deleteAction={deleteAction}
+        isEmpty={optimisticTodos.length === 0}
+      />
+      <TodoStats todos={optimisticTodos} isPending={isPending} />
     </>
+  );
+}
+
+function AddTodoForm({ addAction }: { addAction: (title: string) => void }) {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData(formRef.current!);
+    const title = formData.get('title')?.toString();
+    if (!title?.trim()) return;
+
+    startTransition(() => {
+      addAction(title.trim());
+    });
+    formRef.current?.reset();
+  };
+
+  return (
+    <form ref={formRef} onSubmit={handleSubmit} className="mb-6">
+      <div className="flex gap-2">
+        <input type="text" name="title" placeholder="Add a new todo..." className="flex-1" required />
+        <Button hideSpinner type="submit">
+          Add Todo
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function TodoList({
+  todos,
+  statusChangeAction,
+  deleteAction,
+  isEmpty,
+}: {
+  todos: Todo[];
+  statusChangeAction: (done: boolean, todo: Todo) => void;
+  deleteAction: (todoId: string) => void;
+  isEmpty: boolean;
+}) {
+  if (isEmpty) {
+    return (
+      <div className="space-y-2">
+        <div className="surface-card-padded">
+          <p className="text-text-muted">No todos yet. Add your first todo above! 🎯</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {todos.map(todo => {
+        return (
+          <ViewTransition key={todo.id}>
+            <TodoItem
+              done={todo.done}
+              statusChangeAction={done => {
+                return statusChangeAction(done, todo);
+              }}
+              deleteAction={() => {
+                return deleteAction(todo.id);
+              }}
+            >
+              {todo.title}
+            </TodoItem>
+          </ViewTransition>
+        );
+      })}
+    </div>
+  );
+}
+
+function TodoStats({ todos, isPending }: { todos: Todo[]; isPending: boolean }) {
+  const completed = todos.filter(todo => {
+    return todo.done;
+  }).length;
+  const remaining = todos.filter(todo => {
+    return !todo.done;
+  }).length;
+
+  return (
+    <div className="mt-8 text-center">
+      <p className="text-text-muted text-sm">
+        Total: {todos.length} • Completed: {completed} • Remaining: {remaining}
+      </p>
+      {isPending && (
+        <div className="mt-2 animate-pulse text-xs font-medium text-orange-600" aria-live="polite">
+          <span className="inline-flex items-center gap-1">
+            <SpinnerIcon className="h-3 w-3" />
+            Syncing to server…
+          </span>
+        </div>
+      )}
+    </div>
   );
 }
 

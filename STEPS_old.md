@@ -44,6 +44,7 @@
 ## Client side navigation
 
 - What else might we want? Well, client side navigation. Doing full page reload.
+- For example we want to add page transitions with view transitions. Add a view transition on the Home page, so we can see the view transition working with client side nav of redwoodsdk! Enter exit. Not working!
 - Let's init client side navigation as well here. Internal links will now be intercepted by redwoodSDK, handle pushing the URL, fetch the new RSC payload, and then hydrate it on the client.
 - Now we have our client side navs no browser spinner in our hydrated document.
 - (SSR false, we are in SPA mode! Or static marketing side with RSC payload false).
@@ -51,27 +52,10 @@
 ## Fancy todos
 
 - I tried to build something with some modern React patterns and react 19 and new stuff in redwood.
-- Execute navigation. Streaming with Suspense and server components.
+- And I also added VT on the suspense. Execute navigation. Streaming with Suspense and server components, animating.
 - Todos, lots of modern, fancy stuff, using use() to read a promise from the server in this client component and suspend with a fallback.
-- Since modern React. This fancier todos uses useActionState sort of like an async reducer, because our state depends on the previous state and its also async, and we want ordering, this is a perfect use case. Also using server functions instead of API routes. Works with useoptimistic to make it snappy while syncing to the server! Using forms and actions with the Action naming convention across all transitions!
+- Since modern React. This fancier todos uses useActionState sort of like an async reducer, because our state depends on the previous state and its also async, and we want ordering, this is a perfect use case. Also using server functions instead of API routes. Works with useoptimistic to make it snappy while syncing to the server! Using forms and actions with the Action naming convention across all transitions! And I added a View transition to the sort feature for animated reordering.
 - We can use all latest in React in a predictable way!
-
-## View Transitions
-
-- DOCS: View transitions are coming to react a a component! Currently installable in canary channel, and available in nextjs.
-- Because view transitions are triggered when elements update a transition, a suspense, or a deferred update.
-- For example, when a transition finishes, react will automatically animate the result of the transition to the new UI.
-
-### Add ViewTransitions to Fancy Todos
-
-- As the todos streams in, we want to animate the suspense fallback to the content. Suspense triggers ViewTransitions, so we can wrap the Suspense fallback in a ViewTransition.
-- View trans have 4 activators based on how the view trans component behaves: enter: VT is added to DOM, exit: VT removed DOM, update: updates occur inside it, name: it's a shared element transition between two VTs removed and added in the same transition. We can add custom animations for each activator.
-- Customize exit activator on suspense with "slide-down"! Removed from the DOM. This is custom animations that I've added to my css file like this.
-- Wrap todos in ViewTransition. Customize enter and exit on grid. Animates down and the list goes up.
-- But if you do this, it's going to opt-in the whole subtree to unintended animations, so what you typically do add a default of none, so it doesnt crossfade everything else.
-- Since we are using Actions for our reorder, we can wrap another ViewTransition around our items to animate them reordering. Showcase the animations!
-- Let's add a slide in to the home screen too!
-- React has let me declaratively define my view trans, while doing all the work and handling all the possible edge cases. I'm really bad at animations but I was still able to add all this!
 
 ## Fetch based to stream based payload
 
