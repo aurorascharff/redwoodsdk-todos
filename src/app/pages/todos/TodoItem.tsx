@@ -1,6 +1,6 @@
 'use client';
 
-import { startTransition } from 'react';
+import { startTransition, useOptimistic } from 'react';
 import { cn } from '@/utils/cn';
 
 type Props = {
@@ -11,21 +11,31 @@ type Props = {
 };
 
 export function TodoItem({ done, statusChangeAction, deleteAction, children = false }: Props) {
+  const [optimisticDone, setOptimisticDone] = useOptimistic(done);
+
+  const handleChange = (checked: boolean) => {
+    startTransition(async () => {
+      setOptimisticDone(checked);
+      await statusChangeAction(checked);
+    });
+  };
+
   return (
     <div className="todo-item-container">
       <input
         type="checkbox"
         name="done"
-        checked={done}
+        checked={optimisticDone}
         onChange={e => {
-          startTransition(async () => {
-            await statusChangeAction(e.target.checked);
-          });
+          handleChange(e.target.checked);
         }}
         className="todo-checkbox"
       />
       <span
-        className={cn('flex-1 transition-all', done ? 'text-text-muted line-through' : 'text-text dark:text-text-dark')}
+        className={cn(
+          'flex-1 transition-all',
+          optimisticDone ? 'text-text-muted line-through' : 'text-text dark:text-text-dark',
+        )}
       >
         {children}
       </span>

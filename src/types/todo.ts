@@ -1,10 +1,10 @@
-export interface Todo {
+export type Todo = {
   id: string;
   title: string;
   done: boolean;
   createdAt: Date;
   userId: string;
-}
+};
 
 export type OptimisticTodo = Omit<Todo, 'userId'>;
 

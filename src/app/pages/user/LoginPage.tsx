@@ -64,14 +64,7 @@ export function LoginPage() {
                 Login
               </Button>
             </form>
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-background text-text-muted px-2">or</span>
-              </div>
-            </div>
+            <FormDivider />
             <form action={formAction} className="space-y-3">
               <input
                 type="text"
@@ -87,13 +80,33 @@ export function LoginPage() {
             </form>
           </div>
         </ErrorBoundary>
-        {state?.error && <div className="mt-4 text-center text-sm text-red-600 dark:text-red-400">{state.error}</div>}
-        {state?.message && (
-          <div className="mt-4 text-center text-sm text-green-600 dark:text-green-400">{state.message}</div>
-        )}
+        <StatusMessage error={state?.error} message={state?.message} />
       </div>
     </>
   );
+}
+
+function FormDivider() {
+  return (
+    <div className="relative">
+      <div className="absolute inset-0 flex items-center">
+        <span className="w-full border-t" />
+      </div>
+      <div className="relative flex justify-center text-sm">
+        <span className="bg-background text-text-muted px-2">or</span>
+      </div>
+    </div>
+  );
+}
+
+function StatusMessage({ error, message }: { error?: string; message?: string }) {
+  if (error) {
+    return <div className="mt-4 text-center text-sm text-red-600 dark:text-red-400">{error}</div>;
+  }
+  if (message) {
+    return <div className="mt-4 text-center text-sm text-green-600 dark:text-green-400">{message}</div>;
+  }
+  return null;
 }
 
 function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetErrorBoundary: () => void }) {

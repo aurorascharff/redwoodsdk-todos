@@ -26,21 +26,27 @@ export default function Profile({ ctx }: { ctx: AppContext }) {
                 <span className="field-value">{ctx.user?.id}</span>
               </div>
             </div>
-            <div className="space-y-3">
-              <form action={link('/user/logout')}>
-                <Button type="submit" variant="secondary" className="h-10 w-full">
-                  Logout
-                </Button>
-              </form>
-              <a href={link('/')} className="block">
-                <Button type="button" className="h-10 w-full">
-                  Back to Home
-                </Button>
-              </a>
-            </div>
+            <ProfileActions />
           </div>
         </Card>
       </div>
     </>
+  );
+}
+
+function ProfileActions() {
+  return (
+    <div className="space-y-3">
+      <form action={link('/user/logout')}>
+        <Button type="submit" variant="secondary" className="h-10 w-full">
+          Logout
+        </Button>
+      </form>
+      <a href={link('/')} className="block">
+        <Button type="button" className="h-10 w-full">
+          Back to Home
+        </Button>
+      </a>
+    </div>
   );
 }
