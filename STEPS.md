@@ -10,36 +10,37 @@
 - We can also have some middleware further up, common headers and session. Using cloudflare durable objects for session management. We can actually run middleware freely by adding more functions before or after here, and our request will run through all of this sequentially. Add getUserMiddleware.
 - Adds the user to our app context which can be used anywhere.
 - With App context, we get a mutable object thats passed to each request handler, interruptors, and server functions, and components. See type.
-- For our routes, we can simply render the NOJSDocument. The document will be applied to all routes that are passed to it. Move JSX inside.
+- For our routes, we can simply render the NOJSDocument. This is just a plain document and theres no client side hydration here, plain server-side rendering. The document will be applied to all routes that are passed to it. Move JSX inside.
+- Route matched, placed into that document. Right now.
 - Layouts: wrapped in AppLayout. Add Home page. Whats the best way to learn a framework than building a todo app!
-- Route matched, placed into that document. Right now, this is just a plain document and theres no client side hydration here, plain server-side rendering.
 
 ## Server components, App context
 
 - Home page: Redwoodsdk uses server components as the default, and everything you might be used to in a framework like next.js works with the same mental model in redwoodsdk.
 - Enabling server-side fetching and composability without need for useEffect, with less boilerplate. It's streaming and suspense friendly, and ensures the fastest time to visible content.
-- Add todos stats component with suspense and showcase on home page! Server component simplicity. Streaming in to avoid blocking.
+- Add todos stats component with suspense and showcase on home page! Showcase the todos stats content, async await todos from cloudflare d1 database. Server component simplicity. Streaming in to avoid blocking.
 - Prisma Hooked up to the cloudflare d1 database! (Locally, it uses miniflare to emulate cloudflare workers. It just works between dev and prod.)
 
 ## Api routes, server components TodosSimple, forms
 
 - Let's add in a very simple todos route first here.
 - Check out the simple crud api route here with api prefix(), all native req/res.
-- Here using that API route with web standard forms.
-- (Using the new React 19 metadata, so I can add this anywhere and it wil automatically be added to the head).
+- Here using that API route with web standard forms. No javascript needed on the client at all.
+- Using the new React 19 metadata, so I can add this anywhere and it wil automatically be added to the head.
 - Now, let's say I want to protect my routes. This is where interruptors come in! Return arrays here with an authenticated and a redirect interruptor! Just reusable functions, executed in sequence for each matched request.
 - Showcase isAuthenticated interruptor.
 
 ## Hydrated Document, script, initClient. UserRoutes, protect profile, interupptor, interactive login with 'use client'
 
 - What if we DO want hydration after all for some routes to add interactivity?
-- Snippet regularDocument. More routes. Enabling client side hydration with adding the script tag, client,tsx. Containing initClient to init hydration of our rsc payload.
-- Move homepage from noJS to regular.
-- Log out first to see the login.
-- Interactive login. Go to login. I extracted a section of my route handlers here to a set of userRoutes with a couple of user pages and a logout route. We can colocate our logic and our ui. Logout with a 302 redirect response. Built in web standards.
+- Snippet regularDocument. More routes.
+- Remove homepage from noJS since it's in the regular.
+- Enabling client side hydration with adding the script tag, client,tsx. Containing initClient to init hydration of our rsc payload.
+- Showcase user routes, I want to make these interactive. I extracted a section of my route handlers here to a set of userRoutes with a couple of user pages and a logout route. We can colocate our logic and our ui. Logout with a 302 redirect response. Built in web standards.
+- Interactive login. Go to login. Log out first to see the login.
 - Login page is a client component, using useActionState and server functions. Get a nice interactive spinner and execute our mock login using a session durable object.
 - We can simply use React 19 as its best suited. UseActionState and server functions that access request response. It just works.
-- Showcase register new user, logout, login.
+- Showcase register new user, logout, login. Execute login with "aurora".
 
 ## Client side navigation
 
@@ -70,19 +71,20 @@
 - Wrap todos in ViewTransition. Customize enter and exit on grid. Animates down and the list goes up.
 - But if you do this, it's going to opt-in the whole subtree to unintended animations, so what you typically do add a default of none, so it doesnt crossfade everything else.
 - Since we are using Actions for our reorder, we can wrap another ViewTransition around our items to animate them reordering. Showcase the animations!
-- Let's add a slide in to the home screen too!
+- Let's add a slide in to the home screen too! RedwoodSDK navigations use transitions, so we can wrap the main content in a ViewTransition to animate between pages.
 - React has let me declaratively define my view trans, while doing all the work and handling all the possible edge cases. I'm really bad at animations but I was still able to add all this!
 
 ## Fetch based to stream based payload
 
-- We can actually move beyond this. Redwood provides realtime functionality, utilizing websockets and cloudflare durable objects. I have a third route here, a realtime reactions page. Add it to worker.
+- We can actually move beyond this. Redwood provides realtime functionality, utilizing websockets and cloudflare durable objects. I have a third route here, a realtime reactions page.
 - Getting the theme and reactions from a durable object, using server components.
 - Mutation with an emoji picker client component and server functions.
-- (Double tabs, working as expected here).
-- Now, let's try switching from a fetch-based RSC payload to a streamed-based RSC payload.
+- Not that hard to make it realtime.
+- Double tabs, working as expected here, only updating one.
+- Now, let's try switching from a fetch-based RSC payload to a streamed-based RSC payload, hook it up to websockets.
 - We can switch from InitClient -> InitRealtimeClient with a key that determines which group of clients should share updates, we'll just do the pathname. Same durable object instance.
 - Exported the realtime durable object in worker.tsx, then wire up our worker route with realtimeRoute of a reactions durable object here, connecting the websocket to the appropriate durable object.
-- Now, our page can update over websockets, persistent bidirectional connection! (Try it double tabs again).
+- Now, our page can update over websockets, persistent bidirectional connection! Try it double tabs again.
 - Triggering server functions, client connected on the same key. Regenerate payload to all client on same key, client receive same RSC payload. Durable objects scale infinitely.
 
 ## Release to production
