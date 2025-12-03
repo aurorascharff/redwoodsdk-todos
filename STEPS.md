@@ -70,7 +70,7 @@
 - Customize exit activator on suspense with "slide-down"! Removed from the DOM. This is custom animations that I've added to my css file like this.
 - Wrap todos in ViewTransition. Customize enter and exit on grid. Animates down and the list goes up.
 - But if you do this, it's going to opt-in the whole subtree to unintended animations, so what you typically do add a default of none, so it doesnt crossfade everything else.
-- Since we are using Actions for our reorder, we can wrap another ViewTransition around our items to animate them reordering. Showcase the animations!
+- We can wrap another ViewTransition around our items to animate them reordering. Add usedeferredValue to trigger it. Showcase the animations!
 - Let's add a slide in to the home screen too! RedwoodSDK navigations use transitions, so we can wrap the main content in a ViewTransition to animate between pages.
 - React has let me declaratively define my view trans, while doing all the work and handling all the possible edge cases. I'm really bad at animations but I was still able to add all this!
 
