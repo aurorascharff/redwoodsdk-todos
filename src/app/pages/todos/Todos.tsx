@@ -2,7 +2,7 @@
 
 // @ts-expect-error - unstable API but works in React 19
 import { unstable_ViewTransition as ViewTransition } from 'react';
-import { useActionState, useOptimistic, use, useState, startTransition, useRef } from 'react';
+import { useActionState, useOptimistic, use, useState, startTransition, useRef, useDeferredValue } from 'react';
 import Button from '@/app/components/ui/Button';
 import SpinnerIcon from '@/app/components/ui/icons/SpinnerIcon';
 import type { Todo } from '@/types/todo';
@@ -19,6 +19,7 @@ export default function Todos({ todosPromise }: Props) {
   const [todos, dispatch, isPending] = useActionState(todosReducer, initialTodos);
   const [optimisticTodos, setOptimisticTodos] = useOptimistic(todos);
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest');
+  const deferredSortOrder = useDeferredValue(sortOrder);
 
   const statusChangeAction = (done: boolean, todo: Todo) => {
     const payload = { id: todo.id, updatedTodo: { ...todo, done } };
@@ -51,12 +52,25 @@ export default function Todos({ todosPromise }: Props) {
     dispatch({ payload: { todo: { done: false, id, title } }, type: 'add' });
   };
 
-  const sortedTodos = getSortedTodos(optimisticTodos, sortOrder);
+  const sortedTodos = getSortedTodos(optimisticTodos, deferredSortOrder);
 
   return (
     <>
       <AddTodoForm addAction={addTodoAction} />
-      {optimisticTodos.length > 0 && <SortButton sortOrderAction={setSortOrder} sortOrder={sortOrder} />}
+      {optimisticTodos.length > 0 && (
+        <div className="mb-4 flex justify-end">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => {
+              setSortOrder(getNextSortOrder(sortOrder));
+            }}
+            className="text-sm"
+          >
+            {getSortOrderLabel(sortOrder)}
+          </Button>
+        </div>
+      )}
       <TodoList
         todos={sortedTodos}
         statusChangeAction={statusChangeAction}
@@ -160,38 +174,6 @@ function TodoStats({ todos, isPending }: { todos: Todo[]; isPending: boolean }) 
           </span>
         </div>
       )}
-    </div>
-  );
-}
-
-function SortButton({
-  sortOrderAction,
-  sortOrder,
-  setSortOrder,
-}: {
-  sortOrderAction?: (order: SortOrder) => Promise<void> | void;
-  setSortOrder?: (order: SortOrder) => void;
-  sortOrder: SortOrder;
-}) {
-  const [optimisticSortOrder, setOptimisticSortOrder] = useOptimistic(sortOrder);
-
-  return (
-    <div className="mb-4 flex justify-end">
-      <Button
-        type="button"
-        variant="secondary"
-        onClick={() => {
-          const newSortOrder = getNextSortOrder(sortOrder);
-          setSortOrder?.(newSortOrder);
-          startTransition(async () => {
-            setOptimisticSortOrder(newSortOrder);
-            await sortOrderAction?.(newSortOrder);
-          });
-        }}
-        className="text-sm"
-      >
-        {getSortOrderLabel(optimisticSortOrder)}
-      </Button>
     </div>
   );
 }
