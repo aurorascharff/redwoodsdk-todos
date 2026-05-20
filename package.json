@@ -76,13 +76,16 @@
     "vite": "7.1.6",
     "wrangler": "4.40.2"
   },
+  "packageManager": "pnpm@10.33.0",
   "pnpm": {
     "onlyBuiltDependencies": [
       "@prisma/client",
       "@prisma/engines",
+      "@tailwindcss/oxide",
       "esbuild",
       "prisma",
       "sharp",
+      "unrs-resolver",
       "workerd"
     ]
   }
